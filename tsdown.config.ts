@@ -1,7 +1,7 @@
 import { clientBundle } from './shared/tsdown.client.ts'
 import { gltfVendorBundle } from './tsdown.gltf-vendor.ts'
 
-export default clientBundle('dsh-dpet', ['src/index.ts'], {
+export default clientBundle('dsh-dpet', ['src/server/index.ts'], {
   companions: [gltfVendorBundle()],
   libExternal: [
     '@deepseek-ai/dsh-host-webserver',

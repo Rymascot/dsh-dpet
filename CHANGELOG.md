@@ -1,5 +1,12 @@
 # 更新日志
 
+## 未发布
+
+### 内部调整
+
+- 目录按 Spring Boot + Vue 的习惯重新整理：后端分为 controller / service / repository / common，前端分为 api / store / hooks / views / components / engine / utils / i18n / styles。
+- 设置页拆分为 7 个区块组件，导入流程抽成 `useImportFlow`。功能与界面不变。
+
 ## v1.0.1（2026-09-28）
 
 ### 修复

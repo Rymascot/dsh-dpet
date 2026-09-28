@@ -59,18 +59,48 @@ pnpm test        # 单元测试 + 路由集成测试
 pnpm build       # 构建 lib/（主机端、浏览器端、three.js 分包）
 ```
 
-| 文件 | 作用 |
-|---|---|
-| `src/activity.ts` | 把 DSH 会话事件映射成桌宠的 7 种状态 |
-| `src/library.ts` | 宠物库：内置形象 + 用户导入的形象 |
-| `src/importer.ts` | 导入管线：识别格式、3D 减面压缩、图片处理 |
-| `src/background.ts` | 纯色背景去除：从边缘洪水填充、柔化边缘、去白边 |
-| `src/routes.ts` | `/api/dpet/*` 接口和文件服务（只允许本机访问，写操作校验来源） |
-| `src/client/renderers/motion.ts` | 2D/3D 共用的程序化动作 |
-| `src/client/renderers/jelly.ts` | 2D 果冻变形的计算 |
-| `src/client/renderers/flat.ts` | 2D 渲染器（画布切片绘制、透视倾斜、影子） |
-| `src/client/renderers/gltf.ts` | 3D 渲染器（three.js，含接触阴影） |
-| `src/client/` 其余文件 | 悬浮桌宠、设置页、状态气泡、数据同步 |
+### 项目结构
+
+插件分成后端（跑在 DSH 进程里）和前端（跑在浏览器里）两半，目录按 Spring Boot + Vue 的习惯组织：
+
+```
+src/
+├── server/                      后端（≈ Spring Boot）
+│   ├── index.ts                 启动与装配（≈ 启动类 + 配置类）
+│   ├── controller/routes.ts     /api/dpet/* 接口与文件服务（≈ Controller）
+│   ├── service/
+│   │   ├── activity.ts          把 DSH 会话事件映射成 7 种状态（≈ 事件监听 Service）
+│   │   ├── importer.ts          导入管线：识别格式、3D 减面压缩、图片处理
+│   │   └── background.ts        纯色背景去除：边缘洪水填充、柔化边缘、去白边
+│   ├── repository/
+│   │   ├── library.ts           宠物库：内置形象 + 用户导入的形象（读写磁盘）
+│   │   └── settings.ts          设置的校验与保存
+│   └── common/
+│       ├── http.ts              访问控制（仅本机、校验来源）、请求体读取（≈ 拦截器 + 工具类）
+│       └── files.ts             文件工具
+├── shared/types.ts              前后端共用的数据结构（≈ DTO）
+└── client/                      前端（≈ Vue 项目）
+    ├── index.ts                 入口：挂载悬浮桌宠、注册设置页（≈ main.ts，文件名由构建脚本固定）
+    ├── api/dpet.ts              接口请求（≈ axios 封装）
+    ├── store/dpet.ts            状态与轮询（≈ Pinia store）
+    ├── hooks/useImportFlow.ts   导入流程逻辑（≈ Vue 3 composable）
+    ├── views/SettingsPage.tsx   设置页，只负责拼装下面的组件
+    ├── components/
+    │   ├── FloatingPet.tsx      悬浮桌宠
+    │   ├── PetStage.tsx         按 2D/3D 选择渲染器的舞台
+    │   ├── common/Switch.tsx    开关
+    │   └── settings/            设置页的各个区块：预览舞台、信息卡、图鉴、导入确认、动作编排、位置外观、预告卡
+    ├── engine/                  渲染引擎（与界面框架无关）
+    │   ├── motion.ts            2D/3D 共用的程序化动作
+    │   ├── jelly.ts             2D 果冻变形的计算
+    │   ├── flat.ts              2D 渲染器（画布切片绘制、透视倾斜、影子）
+    │   └── gltf.ts              3D 渲染器（three.js，含接触阴影）
+    ├── utils/                   气泡位置、状态文案、导入报告等小工具
+    ├── i18n/index.ts            中英文文案（≈ vue-i18n）
+    └── styles/dpet.module.css   样式（使用 DSH 的设计变量）
+```
+
+测试文件（`*.test.ts`）放在被测文件旁边；`tests/` 里是启动真实 HTTP 服务的接口集成测试。
 
 ## 许可证
 

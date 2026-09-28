@@ -11,7 +11,7 @@ import type { UserConfig } from 'tsdown'
 export function gltfVendorBundle(): UserConfig {
   return {
     name: 'dsh-dpet/gltf-vendor',
-    entry: { 'gltf-vendor': 'src/client/renderers/gltf/vendor-entry.ts' },
+    entry: { 'gltf-vendor': 'src/client/engine/gltf/vendor-entry.ts' },
     outDir: 'lib',
     format: 'iife',
     platform: 'browser',

@@ -14,10 +14,10 @@ import type { Context } from '@deepseek-ai/cordis'
 // Type-only: pulls the ctx.slots merge and the settings slot declarations.
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
-import { createDpetStore } from './store.ts'
-import { FloatingPet } from './FloatingPet.tsx'
-import { SettingsPage } from './SettingsPage.tsx'
-import { t } from './i18n.ts'
+import { createDpetStore } from './store/dpet.ts'
+import { FloatingPet } from './components/FloatingPet.tsx'
+import { SettingsPage } from './views/SettingsPage.tsx'
+import { t } from './i18n/index.ts'
 
 /** Client services the plugin needs. */
 export const inject = ['slots']

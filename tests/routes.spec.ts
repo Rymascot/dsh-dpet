@@ -8,11 +8,11 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-import { ActivityTracker } from '../src/activity.ts'
-import { PetLibrary } from '../src/library.ts'
-import { makeRoutes } from '../src/routes.ts'
-import { SettingsStore } from '../src/settings.ts'
-import type { ImportResponse, PetView, StateResponse } from '../src/types.ts'
+import { ActivityTracker } from '../src/server/service/activity.ts'
+import { PetLibrary } from '../src/server/repository/library.ts'
+import { makeRoutes } from '../src/server/controller/routes.ts'
+import { SettingsStore } from '../src/server/repository/settings.ts'
+import type { ImportResponse, PetView, StateResponse } from '../src/shared/types.ts'
 
 const pkg = fileURLToPath(new URL('..', import.meta.url))
 let dir: string
