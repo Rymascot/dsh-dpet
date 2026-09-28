@@ -51,14 +51,6 @@ pnpm build       # lib/: host half, browser half, three.js vendor bundle
 
 Settings live in `$DSH_HOME/dpet/settings.json` and imported pets in `$DSH_HOME/dpet/pets/`. See the Chinese README for a file-by-file map.
 
-## Roadmap
-
-- [x] V1: 2D/3D pets, drag-and-drop import with optimization, agent-state motions, visual settings
-- [x] V1.1: plain-background removal with before/after review, 2D jelly deformation, perspective tilt, contact shadow, adaptive bubble
-- [ ] Next: AI cut-out for busy backgrounds, a different picture per state
-- [ ] V2: image to 3D with Tencent Hunyuan 3D, adopted as a pet automatically
-- [ ] V3: an agent tool to create a pet from a chat message; auto-rigging for skeletal animation
-
 ## License
 
 Code: [Apache-2.0](LICENSE). Third-party components and assets: see [NOTICE](NOTICE).
