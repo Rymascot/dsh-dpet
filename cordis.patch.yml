@@ -1,0 +1,8 @@
+# dsh-dpet bundle patch: inserts the DPet plugin row into the web profile.
+# Install with `dsh plugin --profile web add link:<path-to>/dsh-dpet`.
+# The single row mounts both halves: the host side (activity tracking, pet
+# library, import pipeline, /api/dpet routes) and the browser side
+# (lib/client.js: the floating pet and the settings page).
+- insert:
+    - id: dpet
+      name: 'dsh-dpet'

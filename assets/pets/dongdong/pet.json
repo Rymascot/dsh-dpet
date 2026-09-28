@@ -1,0 +1,11 @@
+{
+  "id": "dongdong",
+  "name": "东东",
+  "kind": "3d",
+  "file": "dongdong.glb",
+  "description": "大连东软信息学院吉祥物",
+  "author": "ry",
+  "source": "腾讯混元 3D",
+  "bytes": 1692920,
+  "triangles": 44998
+}

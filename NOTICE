@@ -1,0 +1,40 @@
+DPet (dsh-dpet)
+Copyright 2026 ry (Dalian Neusoft University of Information)
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+-------------------------------------------------------------------------------
+Derived code
+-------------------------------------------------------------------------------
+
+shared/tsdown.client.ts and shared/web-platform.ts are copied from dsh-pet
+(https://github.com/zhu1090093659/dsh-pet), Apache License 2.0, and are used
+unmodified as the DSH client-bundle build preset. The DSH plugin structure
+(host routes, settings.section registration, floating root) follows the
+patterns of dsh-pet.
+
+-------------------------------------------------------------------------------
+Bundled and runtime third-party software
+-------------------------------------------------------------------------------
+
+three.js (https://threejs.org) - MIT License. A subset is bundled into
+lib/gltf-vendor.js.
+
+glTF-Transform (https://gltf-transform.dev) - MIT License. Used by the import
+pipeline.
+
+meshoptimizer (https://github.com/zeux/meshoptimizer) - MIT License. Used for
+mesh simplification.
+
+sharp (https://sharp.pixelplumbing.com) - Apache License 2.0. Its prebuilt
+binaries include libvips (LGPL-3.0-or-later), dynamically linked.
+
+React - MIT License. Provided by the DSH host page, not bundled.
+
+-------------------------------------------------------------------------------
+Assets
+-------------------------------------------------------------------------------
+
+assets/pets/dongdong/ and assets/pets/dongdong-flat/ depict Dongdong, the
+mascot of Dalian Neusoft University of Information. These assets are NOT
+covered by the Apache License. See the NOTICE.md file in each directory.

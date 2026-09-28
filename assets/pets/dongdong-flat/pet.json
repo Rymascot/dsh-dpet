@@ -1,0 +1,10 @@
+{
+  "id": "dongdong-flat",
+  "name": "东东 · 平面版",
+  "kind": "2d",
+  "file": "dongdong.png",
+  "description": "一张静态 PNG，自动套用动作",
+  "author": "ry",
+  "source": "由 3D 模型渲染",
+  "bytes": 91727
+}
