@@ -62,6 +62,8 @@ const HEADROOM = 1.3
 const FOOTROOM = 0.08
 /** Max yaw toward the pointer, in radians. */
 const LOOK_YAW = 0.35
+/** Pointer distance (px) at which the look reaches half strength; it saturates smoothly beyond. */
+const LOOK_HALF = 300
 /** Resting shadow opacity. */
 const SHADOW_ALPHA = 0.32
 /** Lift (in model heights) at which the shadow is smallest. */
@@ -226,7 +228,7 @@ export function mountGltf(options: GltfMountOptions): GltfHandle {
     const onPointerMove = (event: PointerEvent): void => {
       const rect = container.getBoundingClientRect()
       const dx = event.clientX - (rect.left + rect.width / 2)
-      lookTarget = Math.max(-1, Math.min(1, dx / 400)) * LOOK_YAW
+      lookTarget = (dx / (Math.abs(dx) + LOOK_HALF)) * LOOK_YAW
     }
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     teardown.push(() => window.removeEventListener('pointermove', onPointerMove))

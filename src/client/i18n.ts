@@ -97,7 +97,6 @@ const zh = {
   'error.network': '网络错误，请重试',
 
   'mapping.title': '动作编排',
-  'mapping.hint': '给 AI 的每种状态挑一个动作，上面的预览会立刻试给你看。2D 和 3D 形象共用这一套动作。',
   'mapping.reset': '恢复默认',
 
   'place.title': '位置与外观',
@@ -239,7 +238,6 @@ const en: Record<Key, string> = {
   'error.network': 'Network error, please retry',
 
   'mapping.title': 'Motions',
-  'mapping.hint': 'Pick a motion for each AI state; the preview above tries it right away. 2D and 3D pets share these motions.',
   'mapping.reset': 'Reset',
 
   'place.title': 'Position & look',

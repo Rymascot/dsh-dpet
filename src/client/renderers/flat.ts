@@ -33,8 +33,8 @@ export interface FlatMountOptions {
 
 /** Frame budget, matching the 3D renderer. */
 const FRAME_MS = 1000 / 30
-/** Max lean toward the pointer, radians. */
-const LOOK_LEAN = 0.1
+/** Pointer distance (px) at which the look reaches half strength; it saturates smoothly beyond. */
+const LOOK_HALF = 300
 /** Canvas margins around the pet box, as fractions of the box height. */
 const MARGIN = { top: 0.35, side: 0.3, bottom: 0.1 }
 /** Resting shadow opacity. */
@@ -123,8 +123,13 @@ export function mountFlat(options: FlatMountOptions): PetHandle {
     ctx.fill()
     ctx.restore()
 
-    // The picture, strip by strip (0.6 px overlap hides seams).
+    // The picture, strip by strip (0.6 px overlap hides seams), tipped
+    // rigidly around the feet toward the pointer.
     const srcH = img.naturalHeight
+    ctx.save()
+    ctx.translate(foot.x, foot.y)
+    ctx.rotate(frame.roll)
+    ctx.translate(-foot.x, -foot.y)
     for (const strip of frame.strips) {
       const w = pic.w * strip.width
       const h = pic.h * strip.height
@@ -132,6 +137,7 @@ export function mountFlat(options: FlatMountOptions): PetHandle {
       const y = foot.y - strip.top * pic.h
       ctx.drawImage(img, 0, strip.v0 * srcH, img.naturalWidth, (strip.v1 - strip.v0) * srcH, x, y, w, h + 0.6)
     }
+    ctx.restore()
     canvas.style.transform = frame.tilt === 0 ? '' : `perspective(${Math.round(box.h * 4)}px) rotateY(${frame.tilt.toFixed(4)}rad)`
   }
 
@@ -143,7 +149,8 @@ export function mountFlat(options: FlatMountOptions): PetHandle {
 
   const onPointerMove = (event: PointerEvent): void => {
     const rect = container.getBoundingClientRect()
-    lookTarget = Math.max(-1, Math.min(1, (event.clientX - (rect.left + rect.width / 2)) / 400)) * LOOK_LEAN
+    const dx = event.clientX - (rect.left + rect.width / 2)
+    lookTarget = dx / (Math.abs(dx) + LOOK_HALF)
   }
   window.addEventListener('pointermove', onPointerMove, { passive: true })
 

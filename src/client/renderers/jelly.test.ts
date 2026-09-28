@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { STRIPS, TILT_MAX, jellyFrame } from './jelly.ts'
+import { LOOK_ROLL, LOOK_TILT, MAX_BEND, STRIPS, TILT_MAX, jellyFrame } from './jelly.ts'
 import { REST_POSE, motionPose, type GltfPose } from './motion.ts'
 
 const still = (): GltfPose => ({ ...REST_POSE })
@@ -24,9 +24,27 @@ describe('jellyFrame', () => {
     const feet = frame.strips.at(-1)!
     const head = frame.strips[0]!
     expect(Math.abs(feet.x)).toBeLessThan(0.001)
-    expect(head.x).toBeGreaterThan(0.1)
+    expect(head.x).toBeGreaterThan(0.08)
     // Curved, not rigid: the middle moved well under half of the head offset.
     expect(frame.strips[STRIPS / 2]!.x).toBeLessThan(head.x * 0.4)
+  })
+
+  it('caps the bend so a strong sway never shears the picture', () => {
+    const frame = jellyFrame(() => ({ ...REST_POSE, roll: 0.5 }), neutral, 0)
+    for (const strip of frame.strips) expect(Math.abs(strip.x)).toBeLessThanOrEqual(MAX_BEND)
+  })
+
+  it('looks at the pointer by turning and tipping, never by bending', () => {
+    for (const look of [-1, -0.4, 0.4, 1]) {
+      const frame = jellyFrame(still, neutral, look)
+      for (const strip of frame.strips) expect(strip.x).toBe(0)
+      expect(Math.sign(frame.tilt)).toBe(Math.sign(look))
+      expect(Math.abs(frame.tilt)).toBeLessThanOrEqual(LOOK_TILT + 1e-9)
+      expect(Math.abs(frame.roll)).toBeLessThanOrEqual(LOOK_ROLL + 1e-9)
+    }
+    // Turning while looking still stays within the tilt budget.
+    const both = jellyFrame(() => ({ ...REST_POSE, yaw: Math.PI / 2 }), neutral, 1)
+    expect(both.tilt).toBeCloseTo(TILT_MAX)
   })
 
   it('never turns a spin into a flip, only a bounded tilt', () => {

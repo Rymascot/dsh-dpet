@@ -487,7 +487,6 @@ export function SettingsPage(props: { store: DpetStore }): ReactElement {
         <div className={css.head}>
           <div className={css.grow}>
             <h3>{t('mapping.title')}</h3>
-            <p className={css.hint}>{t('mapping.hint')}</p>
           </div>
           <button type="button" className={`${css.btn} ${css.btnGhost}`} onClick={() => patch({ motions: {} })}>{t('mapping.reset')}</button>
         </div>
