@@ -24,18 +24,17 @@ The showcase character is Dongdong, the mascot of Dalian Neusoft University of I
 
 ## Install
 
-Requires DSH 0.1.7-rc.1 or newer, Node.js 22.19+, and pnpm.
+Requires DSH 0.1.7-rc.1 or newer.
+
+**From the Git repository (recommended)**: in the DSH plugin manager, install from a Git repository and enter `https://github.com/Rymascot/dsh-dpet`. The repository ships the built `lib/`, so nothing is compiled and no install scripts run.
+
+**Local development install** (Node.js 22.19+ and pnpm):
 
 ```bash
 git clone https://github.com/Rymascot/dsh-dpet.git
 cd dsh-dpet
 pnpm install
 pnpm build
-```
-
-Then mount the plugin on the web profile (use your real path):
-
-```bash
 dsh plugin --profile web add link:/path/to/dsh-dpet
 ```
 
@@ -48,6 +47,8 @@ pnpm typecheck
 pnpm test        # unit tests + route integration tests
 pnpm build       # lib/: host half, browser half, three.js vendor bundle
 ```
+
+`lib/` is committed: Git installs use it as is. After changing `src/`, run `pnpm build` and commit `lib/` together with the sources (source maps stay out of the repository).
 
 Settings live in `$DSH_HOME/dpet/settings.json` and imported pets in `$DSH_HOME/dpet/pets/`. See the Chinese README for a file-by-file map.
 

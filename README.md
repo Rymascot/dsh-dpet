@@ -24,22 +24,31 @@ DPet 是 [DeepSeek Harness（DSH）](https://github.com/zhu1090093659/dsh-web) �
 
 ## 安装
 
-需要 DSH 0.1.7-rc.1 或更高版本、Node.js 22.19+、pnpm。
+需要 DSH 0.1.7-rc.1 或更高版本。
+
+**方式一：从 Git 仓库安装（推荐）**
+
+在 DSH 的插件管理里选择从 Git 仓库安装，填入：
+
+```
+https://github.com/Rymascot/dsh-dpet
+```
+
+仓库里已经带有构建好的 `lib/`，安装时不需要编译，也不会运行任何安装脚本。
+
+**方式二：本地开发安装**
+
+需要 Node.js 22.19+ 和 pnpm。
 
 ```bash
 git clone https://github.com/Rymascot/dsh-dpet.git
 cd dsh-dpet
 pnpm install
 pnpm build
-```
-
-然后把插件挂到 DSH 的 web 配置上（把路径换成你的实际路径）：
-
-```bash
 dsh plugin --profile web add link:/path/to/dsh-dpet
 ```
 
-重启 DSH，右下角会出现东东，设置里多出「桌宠」页。
+安装后重启 DSH，右下角会出现东东，设置里多出「桌宠」页。
 
 ## 使用
 
@@ -58,6 +67,8 @@ pnpm typecheck   # 类型检查
 pnpm test        # 单元测试 + 路由集成测试
 pnpm build       # 构建 lib/（主机端、浏览器端、three.js 分包）
 ```
+
+**`lib/` 是提交进仓库的**：别人从 Git 仓库安装时直接使用它，不会在安装时编译。所以改完 `src/` 之后，要先运行 `pnpm build`，再把 `lib/` 和源码一起提交（`.map` 调试文件不提交）。
 
 ### 项目结构
 
