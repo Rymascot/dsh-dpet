@@ -15,16 +15,20 @@ import type { Context } from '@deepseek-ai/cordis'
 import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
 import type { AssistantStreamFrame } from '@deepseek-ai/dsh-agent'
 import type {} from '@deepseek-ai/dsh-host-webserver'
+// Type-only: pulls the ctx.tools merge.
+import type {} from '@deepseek-ai/dsh-tools'
 import { ActivityTracker } from './service/activity.ts'
 import { resolveDshHome } from './common/files.ts'
 import { PetLibrary } from './repository/library.ts'
 import { makeRoutes } from './controller/routes.ts'
+import { makeAgentTools } from './controller/agent-tools.ts'
 import { SettingsStore } from './repository/settings.ts'
 
 export { ActivityTracker, projectSessionEvent, projectStreamFrame } from './service/activity.ts'
 export { PetLibrary } from './repository/library.ts'
 export { SettingsStore, sanitizeSettings, DEFAULT_SETTINGS } from './repository/settings.ts'
 export { makeRoutes } from './controller/routes.ts'
+export { makeAgentTools } from './controller/agent-tools.ts'
 export type * from '../shared/types.ts'
 
 /** Stable cordis plugin name (matches the cordis.patch.yml row id). */
@@ -70,4 +74,14 @@ export function apply(ctx: Context): void {
     const disposers = routes.map(route => ctx.webServer.register(route))
     return () => { for (const dispose of disposers) dispose() }
   }, 'dpet: routes')
+
+  // Agent tools join only where the tool registry exists; the pet itself
+  // keeps working without it.
+  ctx.inject(['tools'], (toolsCtx) => {
+    const tools = makeAgentTools({ library, settings })
+    toolsCtx.effect(() => {
+      const disposers = tools.map(tool => toolsCtx.tools.register(tool))
+      return () => { for (const dispose of disposers) dispose() }
+    }, 'dpet: agent tools')
+  })
 }

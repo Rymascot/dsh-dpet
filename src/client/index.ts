@@ -4,7 +4,8 @@
  * Mounts the floating pet as a page-global surface (it must survive session
  * switches and the new-conversation screen, so it lives on document.body,
  * not in a session-scoped slot) and seats the "桌宠" page in the settings
- * navigation.
+ * navigation. The pet's menu reaches the DSH input box through the sessions
+ * service, looked up lazily so the pet never depends on it to appear.
  * @module dsh-dpet/client
  */
 
@@ -15,6 +16,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { createDpetStore } from './store/dpet.ts'
+import { createComposer } from './utils/composer.ts'
 import { FloatingPet } from './components/FloatingPet.tsx'
 import { SettingsPage } from './views/SettingsPage.tsx'
 import { t } from './i18n/index.ts'
@@ -36,7 +38,14 @@ export function apply(ctx: Context): void {
   container.dataset.dshPlugin = 'dpet'
   document.body.appendChild(container)
   const root = createRoot(container)
-  root.render(createElement(FloatingPet, { store }))
+  const composer = createComposer(() => {
+    try {
+      return (ctx as unknown as { get(name: string): unknown }).get('sessions')
+    } catch {
+      return undefined
+    }
+  })
+  root.render(createElement(FloatingPet, { store, composer }))
 
   const Section = (): ReactElement => createElement(SettingsPage, { store })
 

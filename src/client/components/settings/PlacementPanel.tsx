@@ -9,6 +9,7 @@ import { SETTINGS_LIMITS, type DpetSettings, type PetView } from '../../../share
 import { PET_ASPECT } from '../FloatingPet.tsx'
 import { Switch } from '../common/Switch.tsx'
 import { thumbOf } from '../../utils/pet-view.ts'
+import { prefersReducedMotion } from '../../engine/reduced-motion.ts'
 import { t } from '../../i18n/index.ts'
 import css from '../../styles/dpet.module.css'
 
@@ -22,6 +23,7 @@ export function PlacementPanel(props: {
     <section className={css.section}>
       <h3>{t('place.title')}</h3>
       <p className={css.hint}>{t('place.hint')}</p>
+      {prefersReducedMotion() && <p className={css.hint}>{t('place.reducedMotion')}</p>}
       <div className={css.place}>
         <MiniScreen pet={props.pet} settings={settings} onMove={(right, bottom) => patch({ right, bottom })} />
         <div className={css.controls}>

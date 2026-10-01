@@ -20,6 +20,9 @@ The showcase character is Dongdong, the mascot of Dalian Neusoft University of I
 - **One motion set for 2D and 3D**: breathe, look around, spin, hop, nod, cheer, droop, still.
 - **Follows the agent**: DSH session events map onto seven states (idle, preparing, thinking, using tools, replying, done, error); pick the motion for each state in the motion editor.
 - **Adaptive status bubble**: the bubble sits just above the pet's head, scales with the pet, and moves below it near the top of the screen.
+- **Set it up by talking to the AI**: four agent tools let you say "switch to the flat Dongdong, make it bigger, nod while thinking" and the AI does it.
+- **Right-click menu**: puts a ready-made prompt in the DSH input box (never sends, never overwrites your unsent text), plus bigger / smaller / back-to-corner shortcuts.
+- **Respects the system "reduce motion" setting.**
 - **Visual settings**: live preview stage, card gallery, drag-to-place, size and opacity sliders, look-at-cursor, status bubbles. The page uses the DSH design tokens and follows the light and dark themes.
 
 ## Install
@@ -51,6 +54,12 @@ pnpm build       # lib/: host half, browser half, three.js vendor bundle
 `lib/` is committed: Git installs use it as is. After changing `src/`, run `pnpm build` and commit `lib/` together with the sources (source maps stay out of the repository).
 
 Settings live in `$DSH_HOME/dpet/settings.json` and imported pets in `$DSH_HOME/dpet/pets/`. See the Chinese README for a file-by-file map.
+
+## Privacy
+
+The plugin reads only the agent's activity state (thinking, tool names, turn end), never chat content. It sends no model requests, makes no network calls, and has no telemetry; imports and optimization run locally. Its endpoints are loopback-only with same-origin writes, prompts are never sent automatically, and the AI changes the pet only through the four DPet tools.
+
+A Chinese user guide is in [TUTORIAL.md](TUTORIAL.md).
 
 ## License
 

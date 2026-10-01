@@ -16,7 +16,8 @@
 import type { ActivityPhase, PetMotion } from '../../shared/types.ts'
 import type { PhaseSource } from './phase-stream.ts'
 import { ensureGltfVendor, type GltfVendor } from './gltf/runtime.ts'
-import { motionForPhase, motionPose, tapSquash } from './motion.ts'
+import { REST_POSE, motionForPhase, motionPose, tapSquash } from './motion.ts'
+import { reducedMotionQuery } from './reduced-motion.ts'
 
 /** Mount options. */
 export interface GltfMountOptions {
@@ -102,6 +103,8 @@ export function mountGltf(options: GltfMountOptions): GltfHandle {
   let errorListener: ((code: GltfErrorCode) => void) | undefined
   let motions = options.motions
   let lookAtCursor = options.lookAtCursor ?? true
+  // System "reduce motion": hold the pet still (read every frame, so toggling it applies live).
+  const reduced = reducedMotionQuery()
   let tapAt: number | undefined
   let motion: PetMotion = motionForPhase(phase.get(), motions)
   let motionStart = performance.now()
@@ -235,9 +238,10 @@ export function mountGltf(options: GltfMountOptions): GltfHandle {
 
     let last = 0
     const draw = (now: number, dt: number): void => {
-      const pose = motionPose(motion, (now - motionStart) / 1000)
-      const squash = tapSquash(tapAt === undefined ? -1 : (now - tapAt) / 1000)
-      look += ((lookAtCursor ? lookTarget : 0) - look) * Math.min(1, dt * 4)
+      const still = reduced.matches
+      const pose = still ? REST_POSE : motionPose(motion, (now - motionStart) / 1000)
+      const squash = still ? { sx: 1, sy: 1 } : tapSquash(tapAt === undefined ? -1 : (now - tapAt) / 1000)
+      look += ((lookAtCursor && !still ? lookTarget : 0) - look) * Math.min(1, dt * 4)
       pivot.position.y = pose.y * height
       pivot.rotation.set(pose.pitch, pose.yaw + look, pose.roll)
       pivot.scale.set(pose.sx * squash.sx, pose.sy * squash.sy, pose.sz * squash.sx)

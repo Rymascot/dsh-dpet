@@ -16,7 +16,8 @@ import type { ActivityPhase, PetMotion } from '../../shared/types.ts'
 import type { PhaseSource } from './phase-stream.ts'
 import type { GltfErrorCode, GltfHandle } from './gltf.ts'
 import { jellyFrame } from './jelly.ts'
-import { motionForPhase, motionPose, tapSquash } from './motion.ts'
+import { REST_POSE, motionForPhase, motionPose, tapSquash } from './motion.ts'
+import { reducedMotionQuery } from './reduced-motion.ts'
 
 /** The handle shape both renderers share. */
 export type PetHandle = GltfHandle
@@ -51,6 +52,8 @@ export function mountFlat(options: FlatMountOptions): PetHandle {
   let errorListener: ((code: PetErrorCode) => void) | undefined
   let motions = options.motions
   let lookAtCursor = options.lookAtCursor ?? true
+  // System "reduce motion": hold the pet still (read every frame, so toggling it applies live).
+  const reduced = reducedMotionQuery()
   let motion: PetMotion = motionForPhase(phase.get(), motions)
   let motionStart = performance.now()
   let tapAt: number | undefined
@@ -103,8 +106,9 @@ export function mountFlat(options: FlatMountOptions): PetHandle {
   const draw = (now: number): void => {
     if (ctx === null || pic.h === 0) return
     const t = (now - motionStart) / 1000
-    const squash = tapSquash(tapAt === undefined ? -1 : (now - tapAt) / 1000)
-    const frame = jellyFrame(lag => motionPose(motion, Math.max(0, t - lag)), squash, look)
+    const still = reduced.matches
+    const squash = still ? { sx: 1, sy: 1 } : tapSquash(tapAt === undefined ? -1 : (now - tapAt) / 1000)
+    const frame = jellyFrame(lag => (still ? REST_POSE : motionPose(motion, Math.max(0, t - lag))), squash, still ? 0 : look)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr)
 

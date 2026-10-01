@@ -7,6 +7,7 @@ export default clientBundle('dsh-dpet', ['src/server/index.ts'], {
     '@deepseek-ai/dsh-host-webserver',
     '@deepseek-ai/dsh-session',
     '@deepseek-ai/dsh-settings',
+    '@deepseek-ai/dsh-tools',
     /^@gltf-transform\//,
     'meshoptimizer',
     'sharp',
