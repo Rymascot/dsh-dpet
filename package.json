@@ -1,7 +1,8 @@
 {
   "name": "dsh-dpet",
   "description": "DPet: a 2D/3D desktop companion for DeepSeek Harness. Drop in a GLB model or a picture and it becomes a pet that reacts to what the agent is doing.",
-  "version": "1.1.0",
+  "icon": "icon.png",
+  "version": "1.1.1",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {
@@ -15,7 +16,8 @@
     "./client": {
       "default": "./lib/client.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*": "./locale/*"
   },
   "scripts": {
     "build": "tsdown",
@@ -94,6 +96,8 @@
   "files": [
     "lib",
     "assets",
+    "locale",
+    "icon.png",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
