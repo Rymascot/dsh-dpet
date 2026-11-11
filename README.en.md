@@ -13,6 +13,9 @@ The showcase character is Dongdong, the mascot of Dalian Neusoft University of I
   - **3D models are slimmed down**: meshes are decimated and textures re-encoded. A 76 MB, 1.5M-triangle AI-generated model becomes 1.8 MB and 50k triangles in a few seconds, and a cover thumbnail is captured automatically.
   - **Pictures lose their plain background**: white or single-color backdrops are removed with soft, halo-free edges. Before the pet is created, the original and the cleaned picture are shown side by side so you can pick one. Busy backgrounds are left untouched.
   - GIFs keep their animation.
+- **Picture to 3D pet in one click**: connect Tencent Hunyuan on the settings page with your own Tencent Cloud account, pick a picture, and press Generate. Hunyuan builds the 3D model; the plugin downloads, decimates, compresses and imports it as an animated 3D pet. The floating pet shows the progress and cheers when it is done.
+  - Two ways in: a **TokenHub API key** (how Tencent now offers Hunyuan) or a **Tencent Cloud API key** (SecretId / SecretKey). Rapid or Pro quality.
+  - Keys stay on your computer and go only to Tencent Cloud; unfinished jobs resume after a DSH restart.
 - **2D no longer feels like paper**:
   - **Jelly deformation**: the picture is cut into 40 horizontal strips placed by their height above the feet. Sways bend the body (feet stay, the head moves most), breathing lifts the chest, landings squash and rebound, and the upper body trails slightly behind.
   - **No card flips**: turns become a perspective tilt of at most 14 degrees.
@@ -20,7 +23,7 @@ The showcase character is Dongdong, the mascot of Dalian Neusoft University of I
 - **One motion set for 2D and 3D**: breathe, look around, spin, hop, nod, cheer, droop, still.
 - **Follows the agent**: DSH session events map onto seven states (idle, preparing, thinking, using tools, replying, done, error); pick the motion for each state in the motion editor.
 - **Adaptive status bubble**: the bubble sits just above the pet's head, scales with the pet, and moves below it near the top of the screen.
-- **Set it up by talking to the AI**: four agent tools let you say "switch to the flat Dongdong, make it bigger, nod while thinking" and the AI does it.
+- **Set it up by talking to the AI**: five agent tools let you say "switch to the flat Dongdong, make it bigger, nod while thinking" and the AI does it.
 - **Right-click menu**: puts a ready-made prompt in the DSH input box (never sends, never overwrites your unsent text), plus bigger / smaller / back-to-corner shortcuts.
 - **Respects the system "reduce motion" setting.**
 - **Visual settings**: live preview stage, card gallery, drag-to-place, size and opacity sliders, look-at-cursor, status bubbles. The page uses the DSH design tokens and follows the light and dark themes.
@@ -43,6 +46,8 @@ dsh plugin --profile web add link:/path/to/dsh-dpet
 
 Restart DSH. Dongdong appears at the bottom right, and Settings gains a "桌宠" (Desktop Pet) page.
 
+**Updating**: Git installs stay on the installed version. Run `dsh plugin --profile <profile> update dsh-dpet` (`web` or `desktop`), then restart DSH. The desktop app keeps running in the system tray when its window closes: quit it from the tray icon (or Task Manager) and open it again, or the new version will not load.
+
 ## Development
 
 ```bash
@@ -53,11 +58,13 @@ pnpm build       # lib/: host half, browser half, three.js vendor bundle
 
 `lib/` is committed: Git installs use it as is. After changing `src/`, run `pnpm build` and commit `lib/` together with the sources (source maps stay out of the repository).
 
+Set `DPET_HUNYUAN_MOCK=1` before starting DSH to try image-to-3D without a key or network: the built-in Dongdong model stands in for the result.
+
 Settings live in `$DSH_HOME/dpet/settings.json` and imported pets in `$DSH_HOME/dpet/pets/`. See the Chinese README for a file-by-file map.
 
 ## Privacy
 
-The plugin reads only the agent's activity state (thinking, tool names, turn end), never chat content. It sends no model requests, makes no network calls, and has no telemetry; imports and optimization run locally. Its endpoints are loopback-only with same-origin writes, prompts are never sent automatically, and the AI changes the pet only through the four DPet tools.
+The plugin reads only the agent's activity state (thinking, tool names, turn end), never chat content, and has no telemetry; imports and optimization run locally. **Only image-to-3D uses the network**: when you press Generate (or ask the AI to call `dpet_generate_3d`), that one picture goes to Tencent Hunyuan and the model is downloaded back. Hunyuan keys are entered on the settings page, saved only in `$DSH_HOME/dpet/credentials.json`, sent only to Tencent Cloud, and never returned to the page or given to the AI. Endpoints are loopback-only with same-origin writes, prompts are never sent automatically, and the AI changes the pet only through the five DPet tools.
 
 A Chinese user guide is in [TUTORIAL.md](TUTORIAL.md).
 

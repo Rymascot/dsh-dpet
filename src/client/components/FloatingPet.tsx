@@ -8,6 +8,9 @@
  * A 3D pet shown without a gallery thumbnail (e.g. imported by the AI through
  * the dpet_import tool) gets one captured here the first time it renders.
  *
+ * While a Tencent Hunyuan image-to-3D job runs (and the agent is idle) the
+ * pet "thinks" and says so, then cheers when the new look is ready.
+ *
  * The status bubble follows the pet's real head: the renderer reports where
  * the head is inside the box, and the bubble sits a size-proportional gap
  * above it, or below the pet when there is no room above.
@@ -21,7 +24,7 @@ import { PetMenu } from './PetMenu.tsx'
 import { api } from '../api/dpet.ts'
 import { useDpet, type DpetStore } from '../store/dpet.ts'
 import type { PetHandle } from '../engine/flat.ts'
-import { activityLine, tapLine } from '../utils/lines.ts'
+import { activityLine, generationLine, generationPhase, tapLine } from '../utils/lines.ts'
 import { bubbleLayout } from '../utils/bubble.ts'
 import type { Composer } from '../utils/composer.ts'
 import { thumbnailFrom } from '../utils/import-report.ts'
@@ -128,7 +131,12 @@ export function FloatingPet(props: { store: DpetStore; composer: Composer }): Re
     })
   }
 
-  const statusLine = settings.bubbles && activity.phase !== 'idle' ? activityLine(activity, pet.name) : undefined
+  // An image-to-3D job shows on the pet while the agent itself is idle.
+  const agentIdle = activity.phase === 'idle'
+  const phase = (agentIdle ? generationPhase(state.generation) : undefined) ?? activity.phase
+  const statusLine = !settings.bubbles
+    ? undefined
+    : agentIdle ? generationLine(state.generation) : activityLine(activity, pet.name)
   const bubble = tap?.text ?? statusLine
   const place = bubbleLayout(height, headTop, pos.bottom, window.innerHeight)
 
@@ -162,7 +170,7 @@ export function FloatingPet(props: { store: DpetStore; composer: Composer }): Re
       >
         <PetStage
           pet={pet}
-          phase={activity.phase}
+          phase={phase}
           motions={settings.motions}
           lookAtCursor={settings.lookAtCursor}
           style={{ width: '100%', height: '100%' }}

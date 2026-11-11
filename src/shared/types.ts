@@ -99,7 +99,70 @@ export interface StateResponse {
   activity: ActivitySnapshot
   settings: DpetSettings
   pet: PetView
+  /** The image-to-3D job running now, or one that just finished (for the pet's bubble). */
+  generation?: GenerationBrief
 }
+
+/** Hunyuan 3D model tier: rapid (faster, cheaper) or pro (finer). */
+export type GenerateModel = 'rapid' | 'pro'
+
+/** Every model tier, in display order. */
+export const GENERATE_MODELS: readonly GenerateModel[] = ['rapid', 'pro']
+
+/** How the plugin reaches Tencent Hunyuan 3D. */
+export type HunyuanMethod = 'tokenhub' | 'tencentcloud'
+
+/** Connection status for the settings page. Never carries a secret. */
+export interface HunyuanStatus {
+  configured: boolean
+  method?: HunyuanMethod | 'mock'
+  /** local = saved on the settings page; env = environment variables; mock = DPET_HUNYUAN_MOCK. */
+  source?: 'local' | 'env' | 'mock'
+  /** Last characters of the API key / SecretId, e.g. "…a1b2". */
+  hint?: string
+  region?: string
+}
+
+/** Life cycle of an image-to-3D job. */
+export type GenerateJobStatus = 'submitting' | 'queued' | 'running' | 'downloading' | 'importing' | 'done' | 'failed'
+
+/** An image-to-3D job as the browser sees it. */
+export interface GenerateJobView {
+  id: string
+  name: string
+  model: GenerateModel
+  status: GenerateJobStatus
+  createdAt: number
+  updatedAt: number
+  finishedAt?: number
+  /** The new pet, once done. */
+  petId?: string
+  /** Error code when failed (localized by the browser). */
+  error?: string
+  /** Message from Tencent Cloud, shown as is. */
+  detail?: string
+  /** Thumbnail of the input picture. */
+  inputUrl?: string
+  report?: ImportReport
+}
+
+/** What the floating pet needs to know about generation. */
+export interface GenerationBrief {
+  name: string
+  status: GenerateJobStatus
+  petId?: string
+}
+
+/** GET /api/dpet/generate. */
+export interface GenerateStateResponse {
+  hunyuan: HunyuanStatus
+  jobs: GenerateJobView[]
+}
+
+/** POST /api/dpet/generate. */
+export type GenerateResponse =
+  | { ok: true; job: GenerateJobView }
+  | { ok: false; error: string; detail?: string }
 
 /** What an import did, for the progress list. */
 export interface ImportReport {

@@ -152,3 +152,34 @@ export async function sendFile(req: IncomingMessage, res: ServerResponse, file: 
   })
   res.end(req.method === 'HEAD' ? undefined : body)
 }
+
+/** A route handler before the access wrapper. */
+export type Handler = (req: IncomingMessage, res: ServerResponse) => Promise<void> | void
+
+/** Wrap a handler with the access check and uniform error reporting. */
+export function guarded(handler: Handler): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
+  return async (req, res) => {
+    const problem = accessProblem(req)
+    if (problem !== undefined) {
+      writeJson(res, 403, { ok: false, error: problem })
+      return
+    }
+    try {
+      await handler(req, res)
+    } catch (error) {
+      if (res.headersSent) {
+        res.end()
+        return
+      }
+      const message = error instanceof Error ? error.message : String(error)
+      writeJson(res, message === 'body-too-large' ? 413 : 400, { ok: false, error: message })
+    }
+  }
+}
+
+/** Answer 405 unless the request uses one of the methods. */
+export function methodIs(req: IncomingMessage, res: ServerResponse, ...methods: string[]): boolean {
+  if (methods.includes(req.method ?? 'GET')) return true
+  writeJson(res, 405, { ok: false, error: 'method-not-allowed' })
+  return false
+}

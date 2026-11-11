@@ -15,14 +15,13 @@
  */
 
 import { join } from 'node:path'
-import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import type { ActivityTracker } from '../service/activity.ts'
-import { accessProblem, readBody, readJson, sendFile, writeJson } from '../common/http.ts'
+import { guarded, methodIs, readBody, readJson, sendFile, writeJson, type Handler } from '../common/http.ts'
 import { IMPORT_LIMITS, kindOf, processUpload, sniffFormat } from '../service/importer.ts'
 import { cleanName, PET_FILE_PREFIX, type PetEntry, type PetLibrary } from '../repository/library.ts'
 import { DEFAULT_PET_ID, type SettingsStore } from '../repository/settings.ts'
-import type { BackgroundMode, ImportResponse, PetView, StateResponse } from '../../shared/types.ts'
+import type { BackgroundMode, GenerationBrief, ImportResponse, PetView, StateResponse } from '../../shared/types.ts'
 
 /** API prefix of the JSON endpoints. */
 export const API_PREFIX = '/api/dpet'
@@ -42,35 +41,8 @@ export interface RouteDeps {
   settings: SettingsStore
   /** Directory holding lib/gltf-vendor.js. */
   vendorDir: string
-}
-
-type Handler = (req: IncomingMessage, res: ServerResponse) => Promise<void> | void
-
-/** Wrap a handler with the access check and uniform error reporting. */
-function guarded(handler: Handler): WebRoute['handler'] {
-  return async (req, res) => {
-    const problem = accessProblem(req)
-    if (problem !== undefined) {
-      writeJson(res, 403, { ok: false, error: problem })
-      return
-    }
-    try {
-      await handler(req, res)
-    } catch (error) {
-      if (res.headersSent) {
-        res.end()
-        return
-      }
-      const message = error instanceof Error ? error.message : String(error)
-      writeJson(res, message === 'body-too-large' ? 413 : 400, { ok: false, error: message })
-    }
-  }
-}
-
-function methodIs(req: IncomingMessage, res: ServerResponse, ...methods: string[]): boolean {
-  if (methods.includes(req.method ?? 'GET')) return true
-  writeJson(res, 405, { ok: false, error: 'method-not-allowed' })
-  return false
+  /** Image-to-3D jobs, for the floating pet's bubble. */
+  generation?: { brief(): GenerationBrief | undefined }
 }
 
 /** The selected pet, falling back to the default (or first) pet when it is gone. */
@@ -93,10 +65,12 @@ export function makeRoutes(deps: RouteDeps): WebRoute[] {
       writeJson(res, 500, { ok: false, error: 'no-pets' })
       return
     }
+    const generation = deps.generation?.brief()
     const body: StateResponse = {
       activity: tracker.snapshot(),
       settings: { ...current, petId: entry.manifest.id },
       pet: library.view(entry),
+      ...(generation === undefined ? {} : { generation }),
     }
     writeJson(res, 200, body)
   }

@@ -7,11 +7,14 @@ import { mkdirSync, renameSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 
-/** Write a file atomically (temp file + rename), creating parent directories. */
-export function writeFileAtomic(file: string, data: string | Uint8Array): void {
+/**
+ * Write a file atomically (temp file + rename), creating parent directories.
+ * @param mode - file permissions for a new file, e.g. 0o600 for secrets (ignored on Windows).
+ */
+export function writeFileAtomic(file: string, data: string | Uint8Array, mode?: number): void {
   mkdirSync(dirname(file), { recursive: true })
   const temp = file + '.' + process.pid + '.tmp'
-  writeFileSync(temp, data)
+  writeFileSync(temp, data, mode === undefined ? undefined : { mode })
   renameSync(temp, file)
 }
 

@@ -28,6 +28,13 @@ MIT License:
   copyright notice and this permission notice shall be included in all copies
   or substantial portions of the Software.
 
+The Tencent Hunyuan 3D integration (src/server/service/hunyuan/) is written
+from Tencent Cloud's public API documentation (TokenHub 3D generation, ai3d
+API 2025-05-13, signature method v3). The research notes of dsh-gen3d
+(https://github.com/LuZhouheng/dsh-gen3d, MIT License) helped locate those
+documents; no code was copied. The TC3 signature is checked in the tests
+against values produced by Tencent's official Node.js SDK.
+
 -------------------------------------------------------------------------------
 Bundled and runtime third-party software
 -------------------------------------------------------------------------------

@@ -5,10 +5,11 @@
  * @module dsh-dpet/client/views/SettingsPage
  */
 
-import { useEffect, useState, type DragEvent, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type DragEvent, type ReactElement } from 'react'
 import type { ActivityPhase, DpetSettings } from '../../shared/types.ts'
 import { useDpet, type DpetStore } from '../store/dpet.ts'
 import { useImportFlow } from '../hooks/useImportFlow.ts'
+import { useGenerate } from '../hooks/useGenerate.ts'
 import { Switch } from '../components/common/Switch.tsx'
 import { PreviewStage } from '../components/settings/PreviewStage.tsx'
 import { PetInfoCard } from '../components/settings/PetInfoCard.tsx'
@@ -16,7 +17,7 @@ import { PetGallery } from '../components/settings/PetGallery.tsx'
 import { ImportPanel } from '../components/settings/ImportPanel.tsx'
 import { MotionEditor } from '../components/settings/MotionEditor.tsx'
 import { PlacementPanel } from '../components/settings/PlacementPanel.tsx'
-import { ComingSoonCard } from '../components/settings/ComingSoonCard.tsx'
+import { GenerateCard } from '../components/settings/GenerateCard.tsx'
 import { t } from '../i18n/index.ts'
 import css from '../styles/dpet.module.css'
 
@@ -27,6 +28,13 @@ export function SettingsPage(props: { store: DpetStore }): ReactElement {
   const [previewPhase, setPreviewPhase] = useState<ActivityPhase>('idle')
   const [dropping, setDropping] = useState(false)
   const flow = useImportFlow(store, setSelectedId)
+  const heroRef = useRef<HTMLDivElement | null>(null)
+  /** Show a pet on the preview stage and bring the stage into view. */
+  const showOnStage = (petId: string): void => {
+    setSelectedId(petId)
+    heroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+  const generate = useGenerate(store, showOnStage)
 
   useEffect(() => { store.refresh(); void store.refreshPets() }, [store])
 
@@ -62,14 +70,14 @@ export function SettingsPage(props: { store: DpetStore }): ReactElement {
         </div>
       </div>
 
-      <div className={css.hero}>
+      <div className={css.hero} ref={heroRef}>
         <PreviewStage
           pet={selected}
           phase={previewPhase}
           onPhase={setPreviewPhase}
           motions={settings.motions}
           lookAtCursor={settings.lookAtCursor}
-          onReady={handle => flow.stageReady(handle, selected.id)}
+          onReady={handle => flow.stageReady(handle, selected)}
         />
         <PetInfoCard
           key={selected.id}
@@ -95,6 +103,14 @@ export function SettingsPage(props: { store: DpetStore }): ReactElement {
         <ImportPanel flow={flow} />
       </section>
 
+      <GenerateCard
+        flow={generate}
+        pets={pets}
+        currentId={state.pet.id}
+        onView={showOnStage}
+        onUse={(petId) => patch({ petId, enabled: true })}
+      />
+
       <MotionEditor
         motions={settings.motions}
         livePhase={previewPhase}
@@ -106,8 +122,6 @@ export function SettingsPage(props: { store: DpetStore }): ReactElement {
       />
 
       <PlacementPanel pet={state.pet} settings={settings} patch={patch} />
-
-      <ComingSoonCard />
     </div>
   )
 }

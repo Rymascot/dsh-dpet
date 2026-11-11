@@ -18,11 +18,15 @@ import { ACTIVITY_PHASES, PET_MOTIONS, SETTINGS_LIMITS, type ActivityPhase, type
 import { IMPORT_LIMITS, kindOf, processUpload } from '../service/importer.ts'
 import { cleanName, type PetLibrary } from '../repository/library.ts'
 import { DEFAULT_PET_ID, type SettingsStore } from '../repository/settings.ts'
+import type { Generator } from '../service/generator.ts'
+import { GENERATE_UPLOAD_LIMIT } from '../service/hunyuan/image.ts'
 import { currentPet } from './routes.ts'
 
 export interface AgentToolDeps {
   library: PetLibrary
   settings: SettingsStore
+  /** Image-to-3D jobs; the generate tool is left out without it. */
+  generator?: Pick<Generator, 'status' | 'list' | 'start'>
 }
 
 /** Built-in motion of each state (mirrors the client defaults). */
@@ -58,6 +62,9 @@ const MOTION_NOTES: Readonly<Record<PetMotion, string>> = {
 }
 
 const IMPORT_EXTENSIONS = new Set(['.glb', '.png', '.jpg', '.jpeg', '.webp', '.gif'])
+const GENERATE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp'])
+/** Jobs listed by dpet_status. */
+const STATUS_JOBS = 5
 
 function aborted(signal: AbortSignal | undefined): void {
   if (signal?.aborted === true) throw new Error('aborted')
@@ -86,6 +93,25 @@ export function describeState(deps: AgentToolDeps): Record<string, unknown> {
       kind: entry.manifest.kind,
       builtin: entry.builtin,
       ...(entry.manifest.source === undefined ? {} : { source: entry.manifest.source }),
+    })),
+    ...(deps.generator === undefined ? {} : { imageTo3d: describeGeneration(deps.generator) }),
+  }
+}
+
+/** Image-to-3D connection and recent jobs (never secrets). */
+function describeGeneration(generator: NonNullable<AgentToolDeps['generator']>): Record<string, unknown> {
+  const status = generator.status()
+  return {
+    connected: status.configured,
+    ...(status.method === undefined ? {} : { method: status.method }),
+    recentJobs: generator.list().slice(0, STATUS_JOBS).map(job => ({
+      id: job.id,
+      name: job.name,
+      model: job.model,
+      status: job.status,
+      ...(job.petId === undefined ? {} : { petId: job.petId }),
+      ...(job.error === undefined ? {} : { error: job.error }),
+      ...(job.detail === undefined ? {} : { detail: job.detail }),
     })),
   }
 }
@@ -254,5 +280,58 @@ export function makeAgentTools(deps: AgentToolDeps): ToolDefinition[] {
     },
   })
 
-  return [status, update, importPet, manage]
+  const tools: ToolDefinition[] = [status, update, importPet, manage]
+  const generator = deps.generator
+  if (generator === undefined) return tools
+
+  const generate = defineTool({
+    name: 'dpet_generate_3d',
+    description:
+      'Turn a local picture (.png .jpg .jpeg .webp) into a 3D desktop pet with Tencent Hunyuan 3D, using the key ' +
+      'the user saved in DSH Settings → 桌宠 → AI 生成 3D. Each job spends the user\'s Tencent Cloud credits, so call it ' +
+      'only when the user explicitly asks to generate a 3D model or 3D pet from a picture. The job runs in the background ' +
+      '(about 1-3 minutes for rapid, longer for pro); the pet appears in the library when done. Check progress with dpet_status. ' +
+      'If it reports not-configured, tell the user to open Settings → 桌宠 and connect Tencent Hunyuan there. ' +
+      'Never ask the user to paste API keys or secrets into the chat.',
+    parameters: {
+      path: { type: 'string', required: true, description: 'Absolute path of the picture. A subject on a plain or transparent background works best.' },
+      name: { type: 'string', description: 'Display name of the new pet; defaults to the file name.' },
+      model: { type: 'string', enum: ['rapid', 'pro'], description: 'rapid (default): faster and cheaper. pro: finer detail, slower, more credits.' },
+      use: { type: 'boolean', description: 'Show the new pet as soon as it is ready (default true).' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: true },
+      render: (_args, value) => [{ type: 'text', text: 'DPet image-to-3D:\n' + summary(value as Record<string, unknown>) }],
+    },
+    async execute(args, exec) {
+      aborted(exec?.signal)
+      if (!isAbsolute(args.path)) throw new Error('path must be absolute.')
+      if (!GENERATE_EXTENSIONS.has(extname(args.path).toLowerCase())) throw new Error('Use a .png, .jpg, .jpeg or .webp picture.')
+      const info = await stat(args.path).catch(() => undefined)
+      if (info === undefined || !info.isFile()) throw new Error(`File not found: ${args.path}`)
+      if (info.size > GENERATE_UPLOAD_LIMIT) throw new Error(`Picture too large (${info.size} bytes, limit ${GENERATE_UPLOAD_LIMIT}).`)
+      if (!generator.status().configured) {
+        throw new Error('not-configured: Tencent Hunyuan is not connected. Ask the user to open DSH Settings → 桌宠 → AI 生成 3D and save their key there (never in chat).')
+      }
+      const name = cleanName(args.name) ?? cleanName(basename(args.path, extname(args.path))) ?? '3D pet'
+      let job
+      try {
+        job = await generator.start(new Uint8Array(await readFile(args.path)), { name, model: args.model ?? 'rapid', use: args.use !== false })
+      } catch (error) {
+        const code = error instanceof Error ? error.message : String(error)
+        if (code === 'busy') throw new Error('busy: another image-to-3D job is still running (Hunyuan runs one at a time). Check dpet_status and try again when it finishes.')
+        throw error
+      }
+      if (job.status === 'failed') {
+        throw new Error(`Submitting to Tencent Hunyuan failed: ${job.error ?? 'error'}${job.detail === undefined ? '' : ' (' + job.detail + ')'}`)
+      }
+      return {
+        job: { id: job.id, name: job.name, model: job.model, status: job.status },
+        note: 'Generation runs in the background. The new pet appears in the library when done' +
+          (args.use !== false ? ' and is shown right away' : '') + '. Use dpet_status to check progress.',
+      } as never
+    },
+  })
+
+  return [...tools, generate]
 }

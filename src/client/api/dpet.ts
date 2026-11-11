@@ -3,7 +3,18 @@
  * @module dsh-dpet/client/api/dpet
  */
 
-import type { BackgroundMode, DpetSettings, ImportReport, ImportResponse, PetView, StateResponse } from '../../shared/types.ts'
+import type {
+  BackgroundMode,
+  DpetSettings,
+  GenerateModel,
+  GenerateResponse,
+  GenerateStateResponse,
+  HunyuanStatus,
+  ImportReport,
+  ImportResponse,
+  PetView,
+  StateResponse,
+} from '../../shared/types.ts'
 
 const API = '/api/dpet'
 
@@ -60,4 +71,33 @@ export const api = {
     post<{ ok: boolean; pet?: PetView; error?: string }>('/pet/' + encodeURIComponent(id) + '/preview', png, 'image/png'),
   remove: (id: string) =>
     post<{ ok: boolean; error?: string }>('/pet/' + encodeURIComponent(id) + '/delete', '{}', 'application/json'),
+
+  // Image-to-3D (Tencent Hunyuan)
+  generateState: async (): Promise<GenerateStateResponse> => json<GenerateStateResponse>(await fetch(API + '/generate')),
+  generate: async (file: Blob, name: string, model: GenerateModel): Promise<GenerateResponse> => {
+    try {
+      return await post<GenerateResponse>('/generate?name=' + encodeURIComponent(name) + '&model=' + model, file, 'application/octet-stream')
+    } catch {
+      return { ok: false, error: 'network' }
+    }
+  },
+  /** Save keys on this computer (sent to the local host only). */
+  saveCredentials: async (body: Record<string, string>): Promise<{ ok: boolean; hunyuan?: HunyuanStatus; error?: string }> => {
+    try {
+      return await post('/generate/credentials', JSON.stringify(body), 'application/json')
+    } catch {
+      return { ok: false, error: 'network' }
+    }
+  },
+  clearCredentials: () =>
+    post<{ ok: boolean; hunyuan?: HunyuanStatus; error?: string }>('/generate/credentials', JSON.stringify({ clear: true }), 'application/json'),
+  checkConnection: async (): Promise<{ ok: boolean; error?: string; detail?: string }> => {
+    try {
+      return await post('/generate/check', '{}', 'application/json')
+    } catch {
+      return { ok: false, error: 'network' }
+    }
+  },
+  dismissJob: (id: string) =>
+    post<{ ok: boolean; error?: string }>('/generate/job/' + encodeURIComponent(id) + '/dismiss', '{}', 'application/json'),
 }

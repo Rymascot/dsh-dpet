@@ -8,7 +8,7 @@
  */
 
 import { useRef, useState } from 'react'
-import type { BackgroundMode, ImportReport } from '../../shared/types.ts'
+import type { BackgroundMode, ImportReport, PetView } from '../../shared/types.ts'
 import { api } from '../api/dpet.ts'
 import type { DpetStore } from '../store/dpet.ts'
 import type { PetHandle } from '../engine/flat.ts'
@@ -52,8 +52,12 @@ export interface ImportFlow {
   cancel(): void
   /** Hide the finished progress panel. */
   dismiss(): void
-  /** The preview stage finished loading `petId`; capture a thumbnail if it was just imported. */
-  stageReady(handle: PetHandle, petId: string): void
+  /**
+   * The preview stage finished loading `pet`; capture a gallery thumbnail if
+   * it was just imported, or if it is an imported 3D pet without one (e.g.
+   * generated with Tencent Hunyuan or imported by the AI).
+   */
+  stageReady(handle: PetHandle, pet: PetView): void
 }
 
 /**
@@ -64,6 +68,7 @@ export function useImportFlow(store: DpetStore, onImported: (petId: string) => v
   const [review, setReview] = useState<ImportReview | undefined>(undefined)
   const [progress, setProgress] = useState<ImportProgress | undefined>(undefined)
   const pendingThumbnail = useRef<string | undefined>(undefined)
+  const thumbnailed = useRef(new Set<string>())
 
   const release = (current: ImportReview | undefined): void => {
     if (current === undefined) return
@@ -132,9 +137,13 @@ export function useImportFlow(store: DpetStore, onImported: (petId: string) => v
     dismiss() {
       setProgress(undefined)
     },
-    stageReady(handle, petId) {
-      if (pendingThumbnail.current === undefined || pendingThumbnail.current !== petId) return
-      pendingThumbnail.current = undefined
+    stageReady(handle, pet) {
+      const petId = pet.id
+      const fresh = pendingThumbnail.current === petId
+      const missing = pet.kind === '3d' && !pet.builtin && pet.previewUrl === undefined && !thumbnailed.current.has(petId)
+      if (!fresh && !missing) return
+      if (fresh) pendingThumbnail.current = undefined
+      thumbnailed.current.add(petId)
       const dataUrl = handle.snapshot()
       if (dataUrl === undefined) return
       void thumbnailFrom(dataUrl).then(async (blob) => {
@@ -142,7 +151,7 @@ export function useImportFlow(store: DpetStore, onImported: (petId: string) => v
         const saved = await api.setPreview(petId, blob)
         if (!saved.ok) return
         await store.refreshPets()
-        setProgress(current => current === undefined ? current : { ...current, steps: [...current.steps, t('import.step.preview')] })
+        if (fresh) setProgress(current => current === undefined ? current : { ...current, steps: [...current.steps, t('import.step.preview')] })
       })
     },
   }

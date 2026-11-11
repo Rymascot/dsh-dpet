@@ -13,13 +13,14 @@ import css from '../styles/dpet.module.css'
 export const PROMPT_ITEMS: readonly { label: I18nKey; prompt: I18nKey }[] = [
   { label: 'menu.aiSwitch', prompt: 'prompt.switch' },
   { label: 'menu.aiImport', prompt: 'prompt.import' },
+  { label: 'menu.aiGenerate', prompt: 'prompt.generate' },
   { label: 'menu.aiMotions', prompt: 'prompt.motions' },
   { label: 'menu.aiIntro', prompt: 'prompt.intro' },
 ]
 
 /** Approximate menu box, for keeping it on screen. */
 const MENU_W = 236
-const MENU_H = 300
+const MENU_H = 330
 
 export interface PetMenuProps {
   /** Pointer position that opened the menu (viewport px). */
