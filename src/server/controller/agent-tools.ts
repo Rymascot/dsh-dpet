@@ -288,10 +288,10 @@ export function makeAgentTools(deps: AgentToolDeps): ToolDefinition[] {
     name: 'dpet_generate_3d',
     description:
       'Turn a local picture (.png .jpg .jpeg .webp) into a 3D desktop pet with Tencent Hunyuan 3D, using the key ' +
-      'the user saved in DSH Settings → 桌宠 → AI 生成 3D. Each job spends the user\'s Tencent Cloud credits, so call it ' +
+      'the user saved in DSH Settings → 桌宠 → Key 密钥 tab. Each job spends the user\'s Tencent Cloud credits, so call it ' +
       'only when the user explicitly asks to generate a 3D model or 3D pet from a picture. The job runs in the background ' +
       '(about 1-3 minutes for rapid, longer for pro); the pet appears in the library when done. Check progress with dpet_status. ' +
-      'If it reports not-configured, tell the user to open Settings → 桌宠 and connect Tencent Hunyuan there. ' +
+      'If it reports not-configured, tell the user to open Settings → 桌宠 → Key 密钥 and connect Tencent Hunyuan there. ' +
       'Never ask the user to paste API keys or secrets into the chat.',
     parameters: {
       path: { type: 'string', required: true, description: 'Absolute path of the picture. A subject on a plain or transparent background works best.' },
@@ -311,7 +311,7 @@ export function makeAgentTools(deps: AgentToolDeps): ToolDefinition[] {
       if (info === undefined || !info.isFile()) throw new Error(`File not found: ${args.path}`)
       if (info.size > GENERATE_UPLOAD_LIMIT) throw new Error(`Picture too large (${info.size} bytes, limit ${GENERATE_UPLOAD_LIMIT}).`)
       if (!generator.status().configured) {
-        throw new Error('not-configured: Tencent Hunyuan is not connected. Ask the user to open DSH Settings → 桌宠 → AI 生成 3D and save their key there (never in chat).')
+        throw new Error('not-configured: Tencent Hunyuan is not connected. Ask the user to open DSH Settings → 桌宠 → Key 密钥 and save their key there (never in chat).')
       }
       const name = cleanName(args.name) ?? cleanName(basename(args.path, extname(args.path))) ?? '3D pet'
       let job

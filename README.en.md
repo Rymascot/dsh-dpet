@@ -13,7 +13,7 @@ The showcase character is Dong Xiaolong (东小龙), the mascot of Dalian Neusof
   - **3D models are slimmed down**: meshes are decimated and textures re-encoded. A 76 MB, 1.5M-triangle AI-generated model becomes 1.8 MB and 50k triangles in a few seconds, and a cover thumbnail is captured automatically.
   - **Pictures lose their plain background**: white or single-color backdrops are removed with soft, halo-free edges. Before the pet is created, the original and the cleaned picture are shown side by side so you can pick one. Busy backgrounds are left untouched.
   - GIFs keep their animation.
-- **Picture to 3D pet in one click**: connect Tencent Hunyuan on the settings page with your own Tencent Cloud account, pick a picture, and press Generate. Hunyuan builds the 3D model; the plugin downloads, decimates, compresses and imports it as an animated 3D pet. The floating pet shows the progress and cheers when it is done.
+- **Picture to 3D pet in one click**: connect Tencent Hunyuan on the settings page's Keys tab with your own Tencent Cloud account, then pick a picture on the Pet tab and press Generate. Hunyuan builds the 3D model; the plugin downloads, decimates, compresses and imports it as an animated 3D pet. The floating pet shows the progress and cheers when it is done.
   - Two ways in: a **TokenHub API key** (how Tencent now offers Hunyuan) or a **Tencent Cloud API key** (SecretId / SecretKey). Rapid or Pro quality.
   - Keys stay on your computer and go only to Tencent Cloud; unfinished jobs resume after a DSH restart.
 - **2D no longer feels like paper**:
@@ -64,7 +64,7 @@ Settings live in `$DSH_HOME/dpet/settings.json` and imported pets in `$DSH_HOME/
 
 ## Privacy
 
-The plugin reads only the agent's activity state (thinking, tool names, turn end), never chat content, and has no telemetry; imports and optimization run locally. **Only image-to-3D uses the network**: when you press Generate (or ask the AI to call `dpet_generate_3d`), that one picture goes to Tencent Hunyuan and the model is downloaded back. Hunyuan keys are entered on the settings page, saved only in `$DSH_HOME/dpet/credentials.json`, sent only to Tencent Cloud, and never returned to the page or given to the AI. Endpoints are loopback-only with same-origin writes, prompts are never sent automatically, and the AI changes the pet only through the five DPet tools.
+The plugin reads only the agent's activity state (thinking, tool names, turn end), never chat content, and has no telemetry; imports and optimization run locally. **Only image-to-3D uses the network**: when you press Generate (or ask the AI to call `dpet_generate_3d`), that one picture goes to Tencent Hunyuan and the model is downloaded back. Hunyuan keys are entered on the settings page's Keys tab, saved only in `$DSH_HOME/dpet/credentials.json`, sent only to Tencent Cloud, and never returned to the page or given to the AI. Endpoints are loopback-only with same-origin writes, prompts are never sent automatically, and the AI changes the pet only through the five DPet tools.
 
 A Chinese user guide is in [TUTORIAL.md](TUTORIAL.md).
 

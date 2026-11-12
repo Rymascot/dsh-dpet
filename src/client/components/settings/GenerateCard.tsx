@@ -1,22 +1,17 @@
 /**
- * Settings: "AI 生成 3D 形象" — connect Tencent Hunyuan with the user's own
- * key (saved on this computer only), pick a picture, generate, and follow
- * the jobs until the new pet lands in the gallery.
+ * Settings, "桌宠" tab: "AI 生成 3D 形象" — pick a picture, generate with
+ * Tencent Hunyuan, and follow the jobs until the new pet lands in the
+ * gallery. The key itself is managed on the "Key 密钥" tab (./KeyPanel.tsx);
+ * without one, this card only points there.
  * @module dsh-dpet/client/components/settings/GenerateCard
  */
 
-import { useEffect, useState, type DragEvent, type ReactElement } from 'react'
-import { GENERATE_MODELS, type GenerateJobView, type HunyuanMethod, type HunyuanStatus, type PetView } from '../../../shared/types.ts'
+import { useEffect, useState, type DragEvent, type ReactElement, type Ref } from 'react'
+import { GENERATE_MODELS, type GenerateJobView, type PetView } from '../../../shared/types.ts'
 import { GENERATE_ACCEPT, isActive, type GenerateError, type GenerateFlow } from '../../hooks/useGenerate.ts'
 import { formatBytes, formatCount, t, type I18nKey } from '../../i18n/index.ts'
 import { errorText } from '../../utils/import-report.ts'
 import css from '../../styles/dpet.module.css'
-
-/** Where users get keys (official Tencent Cloud pages). */
-const LINKS: Readonly<Record<HunyuanMethod, string>> = {
-  tokenhub: 'https://console.cloud.tencent.com/tokenhub/apikey',
-  tencentcloud: 'https://console.cloud.tencent.com/cam/capi',
-}
 
 /** Localized text for an error code (generation codes first, then import codes). */
 export function generateErrorText(code: string): string {
@@ -25,7 +20,7 @@ export function generateErrorText(code: string): string {
   return text === key ? errorText(code) : text
 }
 
-function ErrorLine(props: { error: GenerateError }): ReactElement {
+export function ErrorLine(props: { error: GenerateError }): ReactElement {
   return (
     <div className={`${css.small} ${css.importError}`}>
       {generateErrorText(props.error.code)}
@@ -38,121 +33,6 @@ function ErrorLine(props: { error: GenerateError }): ReactElement {
 function elapsed(since: number, now: number): string {
   const s = Math.max(0, Math.floor((now - since) / 1000))
   return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0')
-}
-
-function ConnectForm(props: { flow: GenerateFlow; canCancel: boolean; onClose: () => void }): ReactElement {
-  const [method, setMethod] = useState<HunyuanMethod>('tokenhub')
-  const [apiKey, setApiKey] = useState('')
-  const [secretId, setSecretId] = useState('')
-  const [secretKey, setSecretKey] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | undefined>(undefined)
-  const ready = method === 'tokenhub' ? apiKey.trim() !== '' : secretId.trim() !== '' && secretKey.trim() !== ''
-
-  const save = async (): Promise<void> => {
-    setSaving(true)
-    setError(undefined)
-    const failed = await props.flow.saveCredentials(method === 'tokenhub'
-      ? { method, apiKey: apiKey.trim() }
-      : { method, secretId: secretId.trim(), secretKey: secretKey.trim() })
-    setSaving(false)
-    if (failed !== undefined) {
-      setError(failed)
-      return
-    }
-    setApiKey('')
-    setSecretId('')
-    setSecretKey('')
-    props.onClose()
-  }
-
-  const secretInput = (value: string, set: (v: string) => void, label: I18nKey): ReactElement => (
-    <label className={css.field}>
-      <span>{t(label)}</span>
-      <input
-        className={css.input}
-        type="password"
-        value={value}
-        autoComplete="off"
-        spellCheck={false}
-        aria-label={t(label)}
-        onChange={e => set(e.target.value)}
-      />
-    </label>
-  )
-
-  return (
-    <div className={css.genBox}>
-      <b>{t('gen.connect.title')}</b>
-      <div className={css.methods} role="radiogroup">
-        {(['tokenhub', 'tencentcloud'] as const).map(m => (
-          <button key={m} type="button" role="radio" aria-checked={method === m} aria-pressed={method === m} className={css.option} onClick={() => setMethod(m)}>
-            <b>{t(('gen.method.' + m) as I18nKey)}</b>
-            <small>{t(('gen.method.' + m + 'Note') as I18nKey)}</small>
-          </button>
-        ))}
-      </div>
-      <div className={css.fields}>
-        {method === 'tokenhub'
-          ? secretInput(apiKey, setApiKey, 'gen.field.apiKey')
-          : <>
-              {secretInput(secretId, setSecretId, 'gen.field.secretId')}
-              {secretInput(secretKey, setSecretKey, 'gen.field.secretKey')}
-            </>}
-      </div>
-      <a className={css.small} href={LINKS[method]} target="_blank" rel="noreferrer">
-        {t(method === 'tokenhub' ? 'gen.connect.howTokenhub' : 'gen.connect.howCloud')} ↗
-      </a>
-      {error !== undefined && <ErrorLine error={{ code: error }} />}
-      <div className={css.btns} style={{ alignItems: 'center' }}>
-        <button type="button" className={css.btn} disabled={!ready || saving} onClick={() => { void save() }}>
-          {t(saving ? 'gen.connect.saving' : 'gen.connect.save')}
-        </button>
-        {props.canCancel && <button type="button" className={`${css.btn} ${css.btnGhost}`} onClick={props.onClose}>{t('gen.connect.cancel')}</button>}
-      </div>
-      <p className={`${css.small} ${css.muted}`} style={{ margin: 0 }}>{t('gen.connect.privacy')}</p>
-    </div>
-  )
-}
-
-function ConnectedBar(props: { flow: GenerateFlow; status: HunyuanStatus; onChange: () => void }): ReactElement {
-  const { status, flow } = props
-  const [checking, setChecking] = useState(false)
-  const [result, setResult] = useState<'ok' | GenerateError | undefined>(undefined)
-
-  if (status.method === 'mock') {
-    return <div className={`${css.genBar} ${css.small}`}><span className={css.dot} />{t('gen.connected.mock')}</div>
-  }
-  const method = status.method === 'tencentcloud' ? 'tencentcloud' : 'tokenhub'
-  const check = async (): Promise<void> => {
-    setChecking(true)
-    setResult(undefined)
-    const error = await flow.check()
-    setChecking(false)
-    setResult(error ?? 'ok')
-  }
-  const remove = (): void => {
-    if (window.confirm(t('gen.confirmRemove'))) void flow.clearCredentials()
-  }
-  return (
-    <div className={css.genBar}>
-      <div className={css.grow}>
-        <div><span className={css.dot} />{t('gen.connected', { method: t(('gen.method.' + method) as I18nKey), hint: status.hint ?? '' })}</div>
-        {status.source === 'env' && <div className={`${css.small} ${css.muted}`}>{t('gen.connected.env')}</div>}
-        {result === 'ok' && <div className={`${css.small} ${css.okText}`}>{t('gen.checkOk')}</div>}
-        {result !== undefined && result !== 'ok' && <ErrorLine error={result} />}
-      </div>
-      <div className={css.btns}>
-        <button type="button" className={`${css.btn} ${css.btnGhost}`} disabled={checking} onClick={() => { void check() }}>
-          {t(checking ? 'gen.checking' : 'gen.check')}
-        </button>
-        <button type="button" className={`${css.btn} ${css.btnGhost}`} onClick={props.onChange}>{t('gen.change')}</button>
-        {status.source === 'local' && (
-          <button type="button" className={`${css.btn} ${css.btnGhost} ${css.btnDanger}`} onClick={remove}>{t('gen.remove')}</button>
-        )}
-      </div>
-    </div>
-  )
 }
 
 function GenerateForm(props: { flow: GenerateFlow }): ReactElement {
@@ -278,11 +158,13 @@ export function GenerateCard(props: {
   flow: GenerateFlow
   pets: PetView[]
   currentId: string
+  sectionRef?: Ref<HTMLElement>
   onView: (petId: string) => void
   onUse: (petId: string) => void
+  /** Switch to the "Key 密钥" tab. */
+  onOpenKeys: () => void
 }): ReactElement {
   const { flow } = props
-  const [editing, setEditing] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   const status = flow.state?.hunyuan
   const jobs = flow.state?.jobs ?? []
@@ -294,17 +176,28 @@ export function GenerateCard(props: {
     return () => window.clearInterval(timer)
   }, [flow.busy])
 
+  const method = status?.method === 'tencentcloud' ? 'tencentcloud' : 'tokenhub'
   return (
-    <section className={css.section}>
+    <section className={css.section} ref={props.sectionRef}>
       <h3 className={css.genTitle}>{t('gen.title')}<span className={css.pill}>{t('gen.tag')}</span></h3>
       <p className={css.hint}>{t('gen.hint')}</p>
       {status === undefined
         ? <p className={css.muted}>…</p>
         : <div className={css.genStack}>
-            {!status.configured || editing
-              ? <ConnectForm flow={flow} canCancel={status.configured} onClose={() => setEditing(false)} />
+            {!status.configured
+              ? <div className={css.needKey}>
+                  <span className={css.grow}>{t('gen.needKey')}</span>
+                  <button type="button" className={css.btn} onClick={props.onOpenKeys}>{t('gen.goKey')}</button>
+                </div>
               : <>
-                  <ConnectedBar flow={flow} status={status} onChange={() => setEditing(true)} />
+                  <div className={`${css.small} ${css.muted}`}>
+                    <span className={css.dot} />
+                    {status.method === 'mock'
+                      ? t('gen.connected.mock')
+                      : t('gen.connected', { method: t(('gen.method.' + method) as I18nKey), hint: status.hint ?? '' })}
+                    {' · '}
+                    <button type="button" className={css.linkBtn} onClick={props.onOpenKeys}>{t('gen.manageKey')}</button>
+                  </div>
                   <GenerateForm flow={flow} />
                 </>}
             {jobs.length > 0 && (
