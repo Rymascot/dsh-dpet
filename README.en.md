@@ -4,7 +4,7 @@
 
 DPet is a desktop-pet plugin for [DeepSeek Harness (DSH)](https://github.com/zhu1090093659/dsh-web). It turns **any character** (a 3D model, a picture, a GIF) into a pet floating over the DSH interface that **moves with what the AI is doing**: it turns while the AI thinks, hops while it runs commands, cheers when a task is done, and droops on errors.
 
-The showcase character is Dongdong, the mascot of Dalian Neusoft University of Information, generated from a picture with Tencent Hunyuan 3D.
+The showcase character is Dong Xiaolong (东小龙), the mascot of Dalian Neusoft University of Information, generated from a picture with Tencent Hunyuan 3D.
 
 ## Features
 
@@ -23,7 +23,7 @@ The showcase character is Dongdong, the mascot of Dalian Neusoft University of I
 - **One motion set for 2D and 3D**: breathe, look around, spin, hop, nod, cheer, droop, still.
 - **Follows the agent**: DSH session events map onto seven states (idle, preparing, thinking, using tools, replying, done, error); pick the motion for each state in the motion editor.
 - **Adaptive status bubble**: the bubble sits just above the pet's head, scales with the pet, and moves below it near the top of the screen.
-- **Set it up by talking to the AI**: five agent tools let you say "switch to the flat Dongdong, make it bigger, nod while thinking" and the AI does it.
+- **Set it up by talking to the AI**: five agent tools let you say "switch to the flat Dong Xiaolong, make it bigger, nod while thinking" and the AI does it.
 - **Right-click menu**: puts a ready-made prompt in the DSH input box (never sends, never overwrites your unsent text), plus bigger / smaller / back-to-corner shortcuts.
 - **Respects the system "reduce motion" setting.**
 - **Visual settings**: live preview stage, card gallery, drag-to-place, size and opacity sliders, look-at-cursor, status bubbles. The page uses the DSH design tokens and follows the light and dark themes.
@@ -44,7 +44,7 @@ pnpm build
 dsh plugin --profile web add link:/path/to/dsh-dpet
 ```
 
-Restart DSH. Dongdong appears at the bottom right, and Settings gains a "桌宠" (Desktop Pet) page.
+Restart DSH. Dong Xiaolong appears at the bottom right, and Settings gains a "桌宠" (Desktop Pet) page.
 
 **Updating**: Git installs stay on the installed version. Run `dsh plugin --profile <profile> update dsh-dpet` (`web` or `desktop`), then restart DSH. The desktop app keeps running in the system tray when its window closes: quit it from the tray icon (or Task Manager) and open it again, or the new version will not load.
 
@@ -58,7 +58,7 @@ pnpm build       # lib/: host half, browser half, three.js vendor bundle
 
 `lib/` is committed: Git installs use it as is. After changing `src/`, run `pnpm build` and commit `lib/` together with the sources (source maps stay out of the repository).
 
-Set `DPET_HUNYUAN_MOCK=1` before starting DSH to try image-to-3D without a key or network: the built-in Dongdong model stands in for the result.
+Set `DPET_HUNYUAN_MOCK=1` before starting DSH to try image-to-3D without a key or network: the built-in Dong Xiaolong model stands in for the result.
 
 Settings live in `$DSH_HOME/dpet/settings.json` and imported pets in `$DSH_HOME/dpet/pets/`. See the Chinese README for a file-by-file map.
 
@@ -72,4 +72,4 @@ A Chinese user guide is in [TUTORIAL.md](TUTORIAL.md).
 
 Code: [Apache-2.0](LICENSE). Third-party components and assets: see [NOTICE](NOTICE).
 
-**The Dongdong character is not covered by the code license**: it belongs to Dalian Neusoft University of Information and is shown as a non-commercial student work. See `assets/pets/dongdong/NOTICE.md`.
+**The Dong Xiaolong character is not covered by the code license**: it belongs to Dalian Neusoft University of Information. This project only has the university's permission to use it and cannot grant any rights in it to others; it is shown as a non-commercial student work and must not be extracted or redistributed. See `assets/pets/dongdong/NOTICE.md`.

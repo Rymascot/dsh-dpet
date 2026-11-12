@@ -67,7 +67,7 @@ export function apply(ctx: Context): void {
   const settings = new SettingsStore(join(dataDir, 'settings.json'))
   const tracker = new ActivityTracker()
   const credentials = new CredentialStore(join(dataDir, 'credentials.json'))
-  // DPET_HUNYUAN_MOCK=1: generation answers with the built-in Dongdong model, no network.
+  // DPET_HUNYUAN_MOCK=1: generation answers with the built-in Dong Xiaolong model, no network.
   const mock = process.env.DPET_HUNYUAN_MOCK === '1'
   const mocked = mock ? mockClient(join(root, 'assets', 'pets', 'dongdong', 'dongdong.glb')) : undefined
   const client = (): HunyuanClient | undefined => {

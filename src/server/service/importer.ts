@@ -2,7 +2,7 @@
  * Import pipeline — turns an uploaded file into a pet-ready asset.
  *
  * 3D (.glb): AI image-to-3D tools emit meshes with a million-plus triangles
- * and 4K textures (the Dongdong model arrived at 76 MB). A desktop pet is a
+ * and 4K textures (the Dong Xiaolong model arrived at 76 MB). A desktop pet is a
  * few hundred pixels tall, so the pipeline welds and decimates the mesh to
  * about 50k triangles and re-encodes textures as 1024 px WebP. The output
  * stays uncompressed geometry (no Draco / meshopt) because the browser

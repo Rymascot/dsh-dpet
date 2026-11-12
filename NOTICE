@@ -57,6 +57,8 @@ React - MIT License. Provided by the DSH host page, not bundled.
 Assets
 -------------------------------------------------------------------------------
 
-assets/pets/dongdong/ and assets/pets/dongdong-flat/ depict Dongdong, the
-mascot of Dalian Neusoft University of Information. These assets are NOT
-covered by the Apache License. See the NOTICE.md file in each directory.
+assets/pets/dongdong/ and assets/pets/dongdong-flat/ depict Dong Xiaolong
+(东小龙), the mascot of Dalian Neusoft University of Information, which owns
+it. This project only has the university's permission to use the mascot and
+cannot grant any rights in it to others. These assets are NOT covered by the
+Apache License. See the NOTICE.md file in each directory.

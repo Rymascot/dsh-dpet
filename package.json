@@ -2,7 +2,7 @@
   "name": "dsh-dpet",
   "description": "DPet: a 2D/3D desktop companion for DeepSeek Harness. Drop in a GLB model or a picture, or generate a 3D pet from a picture with Tencent Hunyuan; it reacts to what the agent is doing.",
   "icon": "icon.png",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {

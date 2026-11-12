@@ -32,7 +32,7 @@ describe('parseManifest', () => {
 describe('names and ids', () => {
   it('slugs ascii names and falls back to a time id for others', () => {
     expect(idFromName('My Dragon!', () => false)).toBe('my-dragon')
-    expect(idFromName('东东', () => false, 36 ** 3)).toBe('pet-1000')
+    expect(idFromName('东小龙', () => false, 36 ** 3)).toBe('pet-1000')
     expect(idFromName('cat', id => id === 'cat')).toBe('cat-2')
     expect(cleanName('  a   b  ')).toBe('a b')
     expect(cleanName('')).toBeUndefined()
@@ -41,12 +41,12 @@ describe('names and ids', () => {
 
 describe('PetLibrary', () => {
   it('lists built-ins first and never lets an import shadow a built-in id', () => {
-    writePet(join(root, 'builtin'), 'dongdong', { name: '东东' })
+    writePet(join(root, 'builtin'), 'dongdong', { name: '东小龙' })
     writePet(join(root, 'user'), 'dongdong', { name: 'fake' })
     writePet(join(root, 'user'), 'cat', { kind: '2d', file: 'image.png' }, 'image.png')
     const list = library.list()
     expect(list.map(e => [e.manifest.id, e.builtin])).toEqual([['dongdong', true], ['cat', false]])
-    expect(list[0]!.manifest.name).toBe('东东')
+    expect(list[0]!.manifest.name).toBe('东小龙')
   })
 
   it('skips pets whose file is missing', () => {

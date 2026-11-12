@@ -1,6 +1,6 @@
 /**
  * Agent tools — let the DSH agent read and change the pet, so a user can say
- * "switch to the flat Dongdong, make it bigger, nod while thinking" in chat.
+ * "switch to the flat Dong Xiaolong, make it bigger, nod while thinking" in chat.
  * These are the AI-facing counterpart of ./routes.ts and go through the same
  * library, settings and import pipeline.
  *
